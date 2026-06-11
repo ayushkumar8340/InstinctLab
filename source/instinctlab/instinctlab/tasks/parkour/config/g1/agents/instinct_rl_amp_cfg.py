@@ -98,4 +98,5 @@ class G1ParkourStairsFlatPPORunnerCfg(G1ParkourPPORunnerCfg):
     terrain is simpler than the full parkour terrain."""
 
     experiment_name = "g1_parkour_stairs_flat"
+    save_interval = 1000
     policy = MoEPolicyCfg_2Experts()
