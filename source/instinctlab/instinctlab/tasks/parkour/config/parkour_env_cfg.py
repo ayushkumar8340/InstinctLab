@@ -346,6 +346,13 @@ _STAIRS_FLAT_SUB_TERRAINS = {
 for _sub_cfg in _STAIRS_FLAT_SUB_TERRAINS.values():
     _sub_cfg.proportion = 0.2
 
+# Bias the target sampling pool towards points on the staircases ("stair_steps") rather than the single
+# fixed "target" point on the flat platform/ground. All sub-terrains must agree on num_patches per key
+# (the flat patches are stacked into a single tensor across the whole terrain grid).
+for _sub_cfg in _STAIRS_FLAT_SUB_TERRAINS.values():
+    _sub_cfg.flat_patch_sampling["target"].num_patches = 20
+    _sub_cfg.flat_patch_sampling["stair_steps"].num_patches = 80
+
 STAIRS_FLAT_TERRAINS_CFG = TerrainGeneratorCfg(
     seed=0,
     size=(8.0, 8.0),

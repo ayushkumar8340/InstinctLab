@@ -155,13 +155,14 @@ class G1ParkourEnvCfg_PLAY(G1ParkourRoughEnvCfg_PLAY, ShoeConfigMixin):
         self.apply_shoe_config()
 
 
-# velocity ranges per sub-terrain for the stairs+flat terrain configs below
+# velocity ranges per sub-terrain for the stairs+flat terrain configs below (slightly slower than the
+# original rough-terrain ranges)
 _STAIRS_FLAT_VELOCITY_RANGES = {
-    "flat": {"lin_vel_x": (0.45, 1.0), "lin_vel_y": (0.0, 0.0), "ang_vel_z": (-1.0, 1.0)},
-    "pyramid_stairs": {"lin_vel_x": (0.45, 0.8), "lin_vel_y": (0.0, 0.0), "ang_vel_z": (-1.0, 1.0)},
-    "pyramid_stairs_high": {"lin_vel_x": (0.45, 0.8), "lin_vel_y": (0.0, 0.0), "ang_vel_z": (-1.0, 1.0)},
-    "pyramid_stairs_inv": {"lin_vel_x": (0.45, 0.8), "lin_vel_y": (0.0, 0.0), "ang_vel_z": (-1.0, 1.0)},
-    "pyramid_stairs_inv_high": {"lin_vel_x": (0.45, 0.8), "lin_vel_y": (0.0, 0.0), "ang_vel_z": (-1.0, 1.0)},
+    "flat": {"lin_vel_x": (0.35, 0.8), "lin_vel_y": (0.0, 0.0), "ang_vel_z": (-1.0, 1.0)},
+    "pyramid_stairs": {"lin_vel_x": (0.35, 0.6), "lin_vel_y": (0.0, 0.0), "ang_vel_z": (-1.0, 1.0)},
+    "pyramid_stairs_high": {"lin_vel_x": (0.35, 0.6), "lin_vel_y": (0.0, 0.0), "ang_vel_z": (-1.0, 1.0)},
+    "pyramid_stairs_inv": {"lin_vel_x": (0.35, 0.6), "lin_vel_y": (0.0, 0.0), "ang_vel_z": (-1.0, 1.0)},
+    "pyramid_stairs_inv_high": {"lin_vel_x": (0.35, 0.6), "lin_vel_y": (0.0, 0.0), "ang_vel_z": (-1.0, 1.0)},
 }
 
 
@@ -183,6 +184,10 @@ class G1ParkourStairsFlatEnvCfg(G1ParkourRoughEnvCfg, ShoeConfigMixin):
         self.commands.base_velocity.target_patch_keys = ["target", "stair_steps"]
         self.commands.base_velocity.random_velocity_terrain = ["flat"]
         self.commands.base_velocity.velocity_ranges = _STAIRS_FLAT_VELOCITY_RANGES
+        # on stairs, the robot's feet are still moving (climbing/descending steps) even when it has
+        # geometrically reached the target, so the default 0.2m threshold is too tight and the velocity
+        # command rarely zeroes out. Loosen it a bit.
+        self.commands.base_velocity.target_dis_threshold = 0.35
 
 
 @configclass
@@ -256,14 +261,16 @@ _SINGLE_STAIRS_DOWN_VELOCITY_RANGES = {
 class G1ParkourStairsUpEnvCfg_PLAY(G1ParkourStairsFlatEnvCfg_PLAY):
     """Play env with a single ascending staircase and one robot, for testing the trained policy.
 
-    The target is still sampled from both "target" and "stair_steps" flat patches, so the robot is
-    commanded to walk to random points anywhere on (or at the top of) the staircase.
+    The target is sampled from the "stair_steps" flat patches only, which are spread across the
+    staircase (the "target" group is a single fixed point at the top platform, which would otherwise
+    dominate the sampling pool and make the target look "stuck" at the same spot every episode).
     """
 
     def __post_init__(self):
         super().__post_init__()
         self.scene.terrain.terrain_generator = SINGLE_STAIRS_UP_TERRAIN_CFG
         self.scene.num_envs = 1
+        self.commands.base_velocity.target_patch_keys = ["stair_steps"]
         self.commands.base_velocity.random_velocity_terrain = None
         self.commands.base_velocity.velocity_ranges = _SINGLE_STAIRS_UP_VELOCITY_RANGES
 
@@ -272,13 +279,15 @@ class G1ParkourStairsUpEnvCfg_PLAY(G1ParkourStairsFlatEnvCfg_PLAY):
 class G1ParkourStairsDownEnvCfg_PLAY(G1ParkourStairsFlatEnvCfg_PLAY):
     """Play env with a single descending (inverted) staircase and one robot, for testing the trained policy.
 
-    The target is still sampled from both "target" and "stair_steps" flat patches, so the robot is
-    commanded to walk to random points anywhere on (or at the bottom of) the staircase.
+    The target is sampled from the "stair_steps" flat patches only, which are spread across the
+    staircase (the "target" group is a single fixed point at the top platform, which would otherwise
+    dominate the sampling pool and make the target look "stuck" at the same spot every episode).
     """
 
     def __post_init__(self):
         super().__post_init__()
         self.scene.terrain.terrain_generator = SINGLE_STAIRS_DOWN_TERRAIN_CFG
         self.scene.num_envs = 1
+        self.commands.base_velocity.target_patch_keys = ["stair_steps"]
         self.commands.base_velocity.random_velocity_terrain = None
         self.commands.base_velocity.velocity_ranges = _SINGLE_STAIRS_DOWN_VELOCITY_RANGES
