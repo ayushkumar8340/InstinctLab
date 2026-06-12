@@ -19,6 +19,8 @@ from instinctlab.motion_reference.utils import motion_interpolate_bilinear
 from instinctlab.sensors import get_link_prim_targets
 from instinctlab.tasks.parkour.config.parkour_env_cfg import (
     ROUGH_TERRAINS_CFG,
+    SINGLE_STAIRS_DOWN_TERRAIN_CFG,
+    SINGLE_STAIRS_UP_TERRAIN_CFG,
     SMALL_STAIRS_FLAT_TERRAINS_CFG,
     STAIRS_FLAT_TERRAINS_CFG,
     ParkourEnvCfg,
@@ -238,3 +240,45 @@ class G1ParkourStairsFlatEnvCfg_PLAY(G1ParkourStairsFlatEnvCfg):
             "position_range": (0.0, 0.0),
             "velocity_range": (0.0, 0.0),
         }
+
+
+# velocity ranges for the single-staircase play configs below (only one sub-terrain each, so only that
+# sub-terrain's name may appear as a key).
+_SINGLE_STAIRS_UP_VELOCITY_RANGES = {
+    "pyramid_stairs": {"lin_vel_x": (0.45, 0.8), "lin_vel_y": (0.0, 0.0), "ang_vel_z": (-1.0, 1.0)},
+}
+_SINGLE_STAIRS_DOWN_VELOCITY_RANGES = {
+    "pyramid_stairs_inv": {"lin_vel_x": (0.45, 0.8), "lin_vel_y": (0.0, 0.0), "ang_vel_z": (-1.0, 1.0)},
+}
+
+
+@configclass
+class G1ParkourStairsUpEnvCfg_PLAY(G1ParkourStairsFlatEnvCfg_PLAY):
+    """Play env with a single ascending staircase and one robot, for testing the trained policy.
+
+    The target is still sampled from both "target" and "stair_steps" flat patches, so the robot is
+    commanded to walk to random points anywhere on (or at the top of) the staircase.
+    """
+
+    def __post_init__(self):
+        super().__post_init__()
+        self.scene.terrain.terrain_generator = SINGLE_STAIRS_UP_TERRAIN_CFG
+        self.scene.num_envs = 1
+        self.commands.base_velocity.random_velocity_terrain = None
+        self.commands.base_velocity.velocity_ranges = _SINGLE_STAIRS_UP_VELOCITY_RANGES
+
+
+@configclass
+class G1ParkourStairsDownEnvCfg_PLAY(G1ParkourStairsFlatEnvCfg_PLAY):
+    """Play env with a single descending (inverted) staircase and one robot, for testing the trained policy.
+
+    The target is still sampled from both "target" and "stair_steps" flat patches, so the robot is
+    commanded to walk to random points anywhere on (or at the bottom of) the staircase.
+    """
+
+    def __post_init__(self):
+        super().__post_init__()
+        self.scene.terrain.terrain_generator = SINGLE_STAIRS_DOWN_TERRAIN_CFG
+        self.scene.num_envs = 1
+        self.commands.base_velocity.random_velocity_terrain = None
+        self.commands.base_velocity.velocity_ranges = _SINGLE_STAIRS_DOWN_VELOCITY_RANGES

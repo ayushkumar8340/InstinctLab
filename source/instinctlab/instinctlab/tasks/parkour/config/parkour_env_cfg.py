@@ -378,6 +378,50 @@ SMALL_STAIRS_FLAT_TERRAINS_CFG = TerrainGeneratorCfg(
 machines with limited GPU memory."""
 
 
+# Single-staircase terrains for play/testing with a single robot: one tile of stairs only, no flat ground.
+_SINGLE_STAIRS_UP_SUB_TERRAINS = {
+    "pyramid_stairs": copy.deepcopy(ROUGH_TERRAINS_CFG.sub_terrains["pyramid_stairs"]),
+}
+_SINGLE_STAIRS_UP_SUB_TERRAINS["pyramid_stairs"].proportion = 1.0
+_SINGLE_STAIRS_UP_SUB_TERRAINS["pyramid_stairs"].wall_prob = [0.0, 0.0, 0.0, 0.0]
+
+SINGLE_STAIRS_UP_TERRAIN_CFG = TerrainGeneratorCfg(
+    seed=0,
+    size=(8.0, 8.0),
+    border_width=3,
+    num_rows=1,
+    num_cols=1,
+    horizontal_scale=0.05,
+    vertical_scale=0.005,
+    slope_threshold=1.0,
+    use_cache=False,
+    curriculum=True,
+    sub_terrains=_SINGLE_STAIRS_UP_SUB_TERRAINS,
+)
+"""Terrain made up of a single ascending pyramid-stairs tile, for playing/testing with one robot."""
+
+_SINGLE_STAIRS_DOWN_SUB_TERRAINS = {
+    "pyramid_stairs_inv": copy.deepcopy(ROUGH_TERRAINS_CFG.sub_terrains["pyramid_stairs_inv"]),
+}
+_SINGLE_STAIRS_DOWN_SUB_TERRAINS["pyramid_stairs_inv"].proportion = 1.0
+_SINGLE_STAIRS_DOWN_SUB_TERRAINS["pyramid_stairs_inv"].wall_prob = [0.0, 0.0, 0.0, 0.0]
+
+SINGLE_STAIRS_DOWN_TERRAIN_CFG = TerrainGeneratorCfg(
+    seed=0,
+    size=(8.0, 8.0),
+    border_width=3,
+    num_rows=1,
+    num_cols=1,
+    horizontal_scale=0.05,
+    vertical_scale=0.005,
+    slope_threshold=1.0,
+    use_cache=False,
+    curriculum=True,
+    sub_terrains=_SINGLE_STAIRS_DOWN_SUB_TERRAINS,
+)
+"""Terrain made up of a single descending (inverted) pyramid-stairs tile, for playing/testing with one robot."""
+
+
 @configclass
 class SceneCfg(InteractiveSceneCfg):
     # ground terrain
